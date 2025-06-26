@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "math-toolkit": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "/path/to/mcp-math-toolkit"
+    }
+  }
+}

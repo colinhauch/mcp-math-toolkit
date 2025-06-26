@@ -1,0 +1,39 @@
+{
+  "name": "mcp-math-toolkit",
+  "version": "1.0.0",
+  "description": "A basic mathematics toolkit accessible to AI powered tools via MCP",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "watch": "tsx watch src/index.ts",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit",
+    "test": "node test-server.mjs",
+    "docker:build": "docker build -t mcp-math-toolkit .",
+    "docker:run": "docker run --rm -i mcp-math-toolkit",
+    "docker:dev": "docker-compose --profile dev up mcp-math-toolkit-dev"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "mathematics",
+    "toolkit",
+    "ai"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
