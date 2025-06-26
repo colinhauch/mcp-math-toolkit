@@ -1,23 +1,17 @@
-# MCP Math Toolkit
+# MCP Random Toolkit
 
-A lightweight, authless Model Context Protocol (MCP) server that provides mathematical operations and statistical functions. Built with Node.js, TypeScript, and designed for easy Docker deployment.
+A lightweight, authless Model Context Protocol (MCP) server that provides random number generation capabilities. Built with Node.js, TypeScript, and designed for easy Docker deployment.
 
 ## Features
 
-### Basic Arithmetic
-- Addition, subtraction, multiplication, division
-- Power operations and square root
-- Absolute value and rounding
+### Pseudo Random Numbers
+- Generate pseudo random integers using JavaScript's Math.random()
+- Configurable min/max range (inclusive)
 
-### Advanced Mathematics
-- Trigonometric functions (sin, cos, tan)
-- Logarithmic functions (natural log, log base 10)
-- Factorial calculation
-
-### Statistical Operations
-- Mean, median, and standard deviation
-- Minimum and maximum values
-- Array-based statistical analysis
+### True Random Numbers
+- Generate truly random integers using quantum random number generator
+- Uses quantum entropy from https://lfdr.de/QRNG/ API
+- Configurable min/max range (inclusive)
 
 ## Quick Start
 
@@ -69,10 +63,10 @@ This server implements the Model Context Protocol and communicates via stdio. It
 ```json
 {
   "mcpServers": {
-    "math-toolkit": {
+    "random-toolkit": {
       "command": "node",
       "args": ["dist/index.js"],
-      "cwd": "/path/to/mcp-math-toolkit"
+      "cwd": "/path/to/mcp-random-toolkit"
     }
   }
 }
@@ -80,34 +74,9 @@ This server implements the Model Context Protocol and communicates via stdio. It
 
 ## Available Tools
 
-### Basic Operations
-- `add(a, b)` - Add two numbers
-- `subtract(a, b)` - Subtract b from a
-- `multiply(a, b)` - Multiply two numbers
-- `divide(a, b)` - Divide a by b
-
-### Mathematical Functions
-- `power(base, exponent)` - Raise base to power
-- `sqrt(n)` - Square root
-- `factorial(n)` - Factorial of non-negative integer
-- `abs(n)` - Absolute value
-- `round(n, decimals)` - Round to specified decimal places
-
-### Trigonometric Functions
-- `sin(angle)` - Sine (angle in radians)
-- `cos(angle)` - Cosine (angle in radians)  
-- `tan(angle)` - Tangent (angle in radians)
-
-### Logarithmic Functions
-- `log(n)` - Natural logarithm
-- `log10(n)` - Base-10 logarithm
-
-### Statistical Functions
-- `mean(numbers)` - Arithmetic mean
-- `median(numbers)` - Median value
-- `standard_deviation(numbers)` - Standard deviation
-- `min(numbers)` - Minimum value
-- `max(numbers)` - Maximum value
+### Random Number Generation
+- `pseudo_random_integer(min, max)` - Generate a pseudo random integer between min and max values (inclusive)
+- `true_random_integer(min, max)` - Generate a truly random integer using quantum random number generator between min and max values (inclusive)
 
 ## API Schema
 
@@ -115,15 +84,15 @@ Each tool follows a consistent schema pattern. For example:
 
 ```json
 {
-  "name": "add",
-  "description": "Add two numbers",
+  "name": "pseudo_random_integer",
+  "description": "Generate a pseudo random integer between min and max values (inclusive)",
   "inputSchema": {
     "type": "object",
     "properties": {
-      "a": { "type": "number", "description": "First number" },
-      "b": { "type": "number", "description": "Second number" }
+      "min": { "type": "number", "description": "Minimum value (default: 0)", "default": 0 },
+      "max": { "type": "number", "description": "Maximum value (default: 1)", "default": 1 }
     },
-    "required": ["a", "b"]
+    "required": []
   }
 }
 ```
@@ -131,10 +100,10 @@ Each tool follows a consistent schema pattern. For example:
 ## Error Handling
 
 The server includes comprehensive error handling for:
-- Division by zero
-- Invalid inputs (negative numbers for sqrt, non-integers for factorial)
-- Empty arrays for statistical functions
-- Invalid logarithm arguments
+- Invalid min/max ranges (min > max)
+- Network failures when accessing quantum RNG API
+- Invalid responses from quantum RNG API
+- Missing or invalid arguments
 
 ## Development
 
@@ -143,6 +112,9 @@ The server includes comprehensive error handling for:
 ├── src/
 │   └── index.ts          # Main server implementation
 ├── dist/                 # Compiled JavaScript (generated)
+├── test-quantum.mjs      # Test quantum random generation
+├── test-multiple-quantum.mjs # Test multiple quantum calls
+├── test-server.mjs       # Test server functionality
 ├── package.json          # Dependencies and scripts
 ├── tsconfig.json         # TypeScript configuration
 ├── Dockerfile           # Container definition
@@ -160,20 +132,20 @@ The server includes comprehensive error handling for:
 
 ### Adding New Tools
 
-1. Add the mathematical function to the `MathToolkit` class
+1. Add the random number generation function to the `RandomToolkit` class
 2. Define the tool schema in the `tools` array
 3. Add a case in the request handler switch statement
 
 Example:
 ```typescript
-// Add to MathToolkit class
-static newFunction(param: number): number {
-  return param * 2;
+// Add to RandomToolkit class
+static newRandomFunction(param: number): number {
+  return Math.floor(Math.random() * param);
 }
 
 // Add to tools array
 {
-  name: "new_function",
+  name: "new_random_function",
   description: "Description of the function",
   inputSchema: {
     type: "object",
@@ -185,8 +157,8 @@ static newFunction(param: number): number {
 }
 
 // Add to switch statement
-case "new_function":
-  result = MathToolkit.newFunction(args.param);
+case "new_random_function":
+  result = RandomToolkit.newRandomFunction(args.param);
   break;
 ```
 
