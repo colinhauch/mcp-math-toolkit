@@ -23,6 +23,46 @@ class RandomToolkit {
     }
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+
+  /**
+   * Generate a true random number using quantum random number generator
+   */
+  static async generateTrueRandomInteger(min: number = 0, max: number = 1): Promise<number> {
+    if (min > max) {
+      throw new Error("Minimum value cannot be greater than maximum value");
+    }
+
+    try {
+      // Fetch quantum random bytes from the API
+      const response = await fetch('https://lfdr.de/qrng_api/qrng?length=8&format=HEX');
+      
+      if (!response.ok) {
+        throw new Error(`Quantum RNG API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json() as { qrn: string; length: number };
+      
+      if (!data.qrn || typeof data.qrn !== 'string') {
+        throw new Error('Invalid response from quantum RNG API');
+      }
+
+      // Convert the full hex string directly to a decimal value
+      const hexValue = data.qrn;
+      const quantumNumber = parseInt(hexValue, 16);
+      
+      // Maximum possible value for 8 bytes (16 hex chars)
+      const maxHexValue = Math.pow(2, 64) - 1; // 0xFFFFFFFFFFFFFFFF
+      
+      // Convert to decimal between 0 and 1
+      const normalizedValue = quantumNumber / maxHexValue;
+      
+      // Scale to the desired range
+      return Math.floor(normalizedValue * (max - min + 1)) + min;
+      
+    } catch (error) {
+      throw new Error(`Failed to generate true random number: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
 }
 
 /**
@@ -32,6 +72,18 @@ const tools: Tool[] = [
   {
     name: "pseudo_random_integer",
     description: "Generate a pseudo random integer between min and max values (inclusive)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        min: { type: "number", description: "Minimum value (default: 0)", default: 0 },
+        max: { type: "number", description: "Maximum value (default: 1)", default: 1 }
+      },
+      required: []
+    }
+  },
+  {
+    name: "true_random_integer",
+    description: "Generate a truly random integer using quantum random number generator between min and max values (inclusive). Uses quantum entropy from https://lfdr.de/QRNG/ to seed the random number generator.",
     inputSchema: {
       type: "object",
       properties: {
@@ -84,6 +136,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const min = (args.min as number) || 0;
         const max = (args.max as number) || 1;
         result = RandomToolkit.generatePseudoRandomInteger(min, max);
+        break;
+      case "true_random_integer":
+        const tmin = (args.min as number) || 0;
+        const tmax = (args.max as number) || 1;
+        result = await RandomToolkit.generateTrueRandomInteger(tmin, tmax);
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);
